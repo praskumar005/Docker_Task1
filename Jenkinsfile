@@ -4,7 +4,7 @@ pipeline {
     environment {
         AWS_REGION = 'us-east-1'
         AWS_ACCOUNT_ID = '504133794520'
-        ECR_REPOSITORY = 'nginx-image'
+        ECR_REPOSITORY = 'nginx_image'
         IMAGE_TAG = 'latest'
         ECR_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}"
     }
