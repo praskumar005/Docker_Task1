@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    environment {
+        AWS_REGION = 'us-east-1'
+        AWS_ACCOUNT_ID = '504133794520'
+        ECR_REPOSITORY = 'nginx-image'
+        IMAGE_TAG = 'latest'
+        ECR_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}"
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -10,21 +18,44 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'docker build -t nginx_image1 .'
+                sh 'docker build -t nginx_image .'
             }
         }
 
-        stage('Docker Run') {
+        stage('Login to Amazon ECR') {
             steps {
                 sh '''
-                docker rm -f app1 || true
-                docker run -d --name app1 -p 9090:80 nginx_image1
+                aws ecr get-login-password --region $AWS_REGION | \
+                docker login --username AWS --password-stdin \
+                $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
                 '''
             }
         }
 
+        stage('Tag Docker Image') {
+            steps {
+                sh '''
+                docker tag nginx_image:latest $ECR_URI:$IMAGE_TAG
+                '''
+            }
+        }
+
+        stage('Push Image to ECR') {
+            steps {
+                sh '''
+                docker push $ECR_URI:$IMAGE_TAG
+                '''
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh '''
+                docker run -d --name app_cont -p 9090:80 nginx_image
+                '''
+            }
+        }
     }
 }
-
