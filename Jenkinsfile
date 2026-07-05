@@ -53,7 +53,7 @@ pipeline {
         stage('Run Container') {
             steps {
                 sh '''
-                docker run -d --name app_cont -p 9090:80 nginx_image
+                docker run -d --name app_cont -p 9091:80 nginx_image
                 '''
             }
         }
